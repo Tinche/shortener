@@ -1,0 +1,35 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: shortener-go
+spec:
+  replicas: 1
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        run: shortener-go
+    spec:
+      containers:
+      - image: gcr.io/url-shortener-189609/tinche/shortener-go:latest
+        imagePullPolicy: Always
+        name: shortener-go
+        ports:
+        - containerPort: 8000
+          protocol: TCP
+        env:
+          - name: REDIS_URL
+            valueFrom:
+              configMapKeyRef:
+                name: redis-config
+                key: redis.url
+          - name: REDIS_PW
+            valueFrom:
+              secretKeyRef:
+                name: redis-creds
+                key: password
+      restartPolicy: Always

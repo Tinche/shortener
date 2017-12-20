@@ -1,0 +1,29 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: shortener-ingress
+  annotations:
+    ingress.kubernetes.io/rewrite-target: /
+spec:
+  backend:
+    serviceName: shortener-frontend
+    servicePort: 80
+  rules:
+  - http:
+      paths:
+      - path: /api
+        backend:
+          serviceName: shortener-go
+          servicePort: 8000
+      - path: /api/*
+        backend:
+          serviceName: shortener-go
+          servicePort: 8000
+      - path: /frontend
+        backend:
+          serviceName: shortener-frontend
+          servicePort: 80
+      - path: /frontend/*
+        backend:
+          serviceName: shortener-frontend
+          servicePort: 80

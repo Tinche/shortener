@@ -1,0 +1,22 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: shortener-frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      run: shortener-frontend
+  template:
+    metadata:
+      labels:
+        run: shortener-frontend
+    spec:
+      containers:
+      - image: gcr.io/url-shortener-189609/tinche/shortener-frontend:latest
+        imagePullPolicy: Always
+        name: shortener-frontend
+        ports:
+        - containerPort: 80
+          protocol: TCP
+      restartPolicy: Always
