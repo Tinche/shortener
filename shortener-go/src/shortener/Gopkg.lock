@@ -2,6 +2,12 @@
 
 
 [[projects]]
+  name = "github.com/alicebob/miniredis"
+  packages = [".","server"]
+  revision = "70cb3fab2cf658a95f2ccae5bfb2f0ccbba0c548"
+  version = "2.2.1"
+
+[[projects]]
   branch = "master"
   name = "github.com/dchest/uniuri"
   packages = ["."]
@@ -52,6 +58,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "7d0bbec4de40363b931bd135c0d5c1351e3063356e57199476d4e4bdcc256576"
+  inputs-digest = "425cef8c7d4737e9f95783def9efd00ad51fc5c26aa896904f39a8fd39599b3b"
   solver-name = "gps-cdcl"
   solver-version = 1

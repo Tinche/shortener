@@ -12,9 +12,11 @@ import (
 )
 
 const (
-	AliasPrefix   = "aliases:"
-	FullUrlPrefix = "full_urls:"
+	aliasPrefix   = "aliases:"
+	fullURLPrefix = "full_urls:"
 )
+
+var redisURL = os.Getenv("REDIS_URL")
 
 /**
 	Registration logic.
@@ -26,7 +28,7 @@ func register(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 	// URL and do a length check. Skip for now.
 
 	client := redis.NewClient(&redis.Options{
-		Addr:     os.Getenv("REDIS_URL"),
+		Addr:     redisURL,
 		Password: os.Getenv("REDIS_PW"),
 		DB:       0,
 	})
@@ -36,8 +38,8 @@ func register(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 		alias := uniuri.NewLen(6)
 
 		pipe := client.Pipeline()
-		aliasSet := pipe.SetNX(AliasPrefix+alias, url, 0)
-		fullSet := pipe.SetNX(FullUrlPrefix+url, alias, 0)
+		aliasSet := pipe.SetNX(aliasPrefix+alias, url, 0)
+		fullSet := pipe.SetNX(fullURLPrefix+url, alias, 0)
 
 		_, err := pipe.Exec()
 		if err != nil {
@@ -56,8 +58,8 @@ func register(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 			// The alias succeeded, the full URL failed.
 			// This means there is another alias already.
 			pipe := client.Pipeline()
-			pipe.Del(AliasPrefix + alias) // Clean up the alias.
-			existing := pipe.Get(FullUrlPrefix + url)
+			pipe.Del(aliasPrefix + alias) // Clean up the alias.
+			existing := pipe.Get(fullURLPrefix + url)
 			_, err := pipe.Exec()
 
 			if err != nil {
@@ -73,7 +75,7 @@ func register(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 		} else {
 			// Both failed - we got a conflict on the alias and the full
 			// URL is already there.
-			existing, err := client.Get(FullUrlPrefix + url).Result()
+			existing, err := client.Get(fullURLPrefix + url).Result()
 
 			if err != nil {
 				panic(err)
@@ -93,12 +95,12 @@ func register(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 func redirect(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 	alias := kami.Param(ctx, "alias")
 	client := redis.NewClient(&redis.Options{
-		Addr:     os.Getenv("REDIS_URL"),
+		Addr:     redisURL,
 		Password: os.Getenv("REDIS_PW"),
 		DB:       0,
 	})
 	defer client.Close()
-	val, err := client.Get(AliasPrefix + alias).Result()
+	val, err := client.Get(aliasPrefix + alias).Result()
 	if err == redis.Nil {
 		http.NotFound(w, r)
 	} else if err != nil {
@@ -115,9 +117,13 @@ func healthCheck(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(200)
 }
 
-func main() {
+func setupRoutes() {
 	kami.Get("/", healthCheck)
 	kami.Get("/api/r/:alias", redirect)
 	kami.Post("/api/register/", register)
+}
+
+func main() {
+	setupRoutes()
 	kami.Serve()
 }
