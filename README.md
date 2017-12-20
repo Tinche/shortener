@@ -53,7 +53,7 @@ better failure recovery.) One side-effect of this, for example, is that bare
 URLs (like 'google.com', as opposed to 'https://google.com') won't actually
 work, since the browser will think the redirect is local.
 
-Did my best to *not* skip on the comments.
+Did my best to *not* skip on the comments. There's one unit test included too.
 
 The project is using the new Go dep tool for dependency management. See the
 Dockerfile for details. The Dockerfile uses the new multi-stage build feature,
